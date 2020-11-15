@@ -2,14 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public enum PlotType
+public enum CropType
 {
-
+    Empty,
+    Crop
 }
 
 public enum GrowthState
 {
-    Empty,
+    None,
     Planted, 
     Sprouting,
     Growing,
@@ -18,6 +19,7 @@ public enum GrowthState
 
 public class FarmPlot : MonoBehaviour
 {
+    public CropType crop;
     public GrowthState currentTier;
     public Material currentMat;
     public Material[] tierMats;
@@ -25,7 +27,8 @@ public class FarmPlot : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        currentTier = GrowthState.Planted;
+        crop = CropType.Empty;
+        currentTier = GrowthState.None;
         currentMat = tierMats[(int)currentTier];
         gameObject.transform.Find("progress").GetComponent<MeshRenderer>().material = currentMat;
     }
@@ -37,45 +40,73 @@ public class FarmPlot : MonoBehaviour
             GameObject.Find("GameManager").GetComponent<PlotManager>().player.transform.position,
             gameObject.transform.position)
             < GameObject.Find("GameManager").GetComponent<PlotManager>().nearbyPlotDist
-            && Input.GetKeyDown(KeyCode.E))
-            Grow();
+            && Input.GetKeyDown(KeyCode.E)) {
+            Interact();
+        }
     }
 
     /// <summary>
-    /// Up's the Grow State of the plot to the next tier
+    /// Interact with the plot
+    /// </summary>
+    void Interact()
+	{
+        switch(currentTier) {
+            case GrowthState.None:
+                Plant();
+                break;
+            case GrowthState.FullyGrown:
+                Harvest();
+                break;
+            default:
+                Grow();
+                break;
+        }
+	}
+
+    /// <summary>
+    /// Plants a crop on the plot
+    /// </summary>
+    void Plant()
+	{
+        crop = CropType.Crop;
+        currentTier = GrowthState.Planted;
+
+        UpdateMat(1);
+        Debug.Log("Planted " + crop);
+    }
+
+    /// <summary>
+    /// Increments the GrowthState of the plot
     /// </summary>
     void Grow()
 	{
-        // === Update GrowthState ===
-        // if its already at the end growth, then Harvest is called instead
-        if(currentTier == GrowthState.FullyGrown) {
-            Harvest();
-            return;
-		}
-        
-        // "increment" the enum value
         int tierInt = (int)currentTier;
         tierInt++;
         currentTier = (GrowthState)tierInt;
 
-        // === Update Material ===
-        currentMat = tierMats[tierInt];
-        gameObject.transform.Find("progress").GetComponent<MeshRenderer>().material = currentMat;
-
+        UpdateMat(tierInt);
         // Debug.Log("Growth to state: " + currentTier);
 	}
 
+    /// <summary>
+    /// Harvests the current crop of the plot
+    /// </summary>
     void Harvest()
 	{
-        if(currentTier != GrowthState.FullyGrown)
-            return;
+        UpdateMat(0);
+        Debug.Log("Harvested " + crop);
+        
+        crop = CropType.Empty;
+        currentTier = GrowthState.None;
+    }
 
-        // Updates plot GrowthState to be empty
-        currentTier = GrowthState.Empty;
-
-        // Updates Material
-        currentMat = tierMats[0];
+    /// <summary>
+    /// Helper function to update the material of the plot rim
+    /// </summary>
+    /// <param name="matIndex"></param>
+    void UpdateMat(int matIndex)
+	{
+        currentMat = tierMats[matIndex];
         gameObject.transform.Find("progress").GetComponent<MeshRenderer>().material = currentMat;
-        Debug.Log("Harvested!");
     }
 }
