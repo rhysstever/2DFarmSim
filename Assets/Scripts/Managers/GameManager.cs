@@ -15,7 +15,7 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update() {
         if(Input.GetKeyDown(KeyCode.E)) {
-            GameObject currentObj = player.GetComponent<PlayerInfo>().currentInteractable;
+            GameObject currentObj = player.GetComponent<ItemManager>().currentInteractable;
             GameObject currentItem = player.GetComponent<ItemManager>().currentItem;
             if(currentObj != null) {
                 if(currentObj.tag == "FarmPlot")
@@ -26,7 +26,7 @@ public class GameManager : MonoBehaviour
             }
         } else if(Input.GetKeyDown(KeyCode.Q)) {
             // Q removes the current item
-            player.GetComponent<ItemManager>().RemoveItem();
+            player.GetComponent<ItemManager>().RemoveCurrentItem();
 		}
     }
 }

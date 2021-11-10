@@ -12,18 +12,14 @@ public enum GrowthState
 {
     None,
     Planted,
-    Growing,
+    GrowingStart,
+    GrowingMid,
     FullyGrown
 }
 
 public class FarmPlot : MonoBehaviour
 {
     // Set in inspector
-    public Material noCropMat;
-    public Material plantedMat;
-    public Material growingStartMat;
-    public Material growingMidMat;
-    public Material grownMat;
 
     // Set at Start()
     public GameObject currentCrop;
@@ -38,11 +34,11 @@ public class FarmPlot : MonoBehaviour
         currentState = GrowthState.None;
         growTimer = 0.0f;
         totalTimeToGrow = 0.0f;
-        transform.Find("progress").GetComponent<MeshRenderer>().material = noCropMat;
     }
 
 	void FixedUpdate() {
-        if(currentState == GrowthState.Growing)
+        if(currentState == GrowthState.GrowingStart
+            || currentState == GrowthState.GrowingMid)
             Grow();
     }
 
@@ -63,7 +59,7 @@ public class FarmPlot : MonoBehaviour
                 if(currentItem != null &&
                     currentItem.tag == "Seeds") {
                     Plant(currentItem.GetComponent<Seeds>().crop);
-                    GameObject.Find("gameManager").GetComponent<GameManager>().player.GetComponent<ItemManager>().RemoveItem();
+                    GameObject.Find("gameManager").GetComponent<GameManager>().player.GetComponent<ItemManager>().RemoveCurrentItem();
 				}
                 else
                     Debug.Log("You need seeds in hand!");
@@ -72,12 +68,14 @@ public class FarmPlot : MonoBehaviour
                 if(currentItem != null &&
                     currentItem.tag == "Water") {
                     Water();
-                    GameObject.Find("gameManager").GetComponent<GameManager>().player.GetComponent<ItemManager>().RemoveItem();
+                    GameObject.Find("gameManager").GetComponent<GameManager>().player.GetComponent<ItemManager>().RemoveCurrentItem();
                 }
                 else
                     Debug.Log("You need water!");
                 break;
-            case GrowthState.Growing:
+            case GrowthState.GrowingStart:
+                break;
+            case GrowthState.GrowingMid:
                 break;
             case GrowthState.FullyGrown:
                 GameObject.Find("gameManager").GetComponent<GameManager>().player.GetComponent<ItemManager>().PickupItem(Harvest());
@@ -90,12 +88,11 @@ public class FarmPlot : MonoBehaviour
     /// </summary>
     private void Plant(GameObject crop)
 	{
-        // Adds the crop, updates the plot state, resets the timer, and updates the material
+        // Adds the crop, updates the plot state, and resets the timer
         currentCrop = crop;
         currentState = GrowthState.Planted;
         growTimer = 0.0f;
         totalTimeToGrow = crop.GetComponent<Crop>().timeToGrow;
-        UpdateMaterial(plantedMat);
     }
 
     /// <summary>
@@ -103,9 +100,8 @@ public class FarmPlot : MonoBehaviour
     /// </summary>
     private void Water() 
     {
-        // Updates state and material of the plot
-        currentState = GrowthState.Growing;
-        UpdateMaterial(growingStartMat);
+        // Updates state of the plot
+        currentState = GrowthState.GrowingStart;
     }
 
     /// <summary>
@@ -116,23 +112,20 @@ public class FarmPlot : MonoBehaviour
         // Calculate what percent grown the crop is
         float growPercent = growTimer / totalTimeToGrow;
 
-        // Gets the correct material based on how much the crop has grown
-        Material currentMat = growingStartMat;
+        // Checks if the crop is halfway grown
         switch(growPercent) {
+            // 50% growth
             case float perc when perc >= 0.5f:
-                // 50% growth
-                currentMat = growingMidMat;
+                currentState = GrowthState.GrowingMid;
                 break;
         }
 
-        // Increment timer and apply material
+        // Increment timer
         growTimer += Time.deltaTime / totalTimeToGrow;
-        transform.Find("progress").GetComponent<MeshRenderer>().material = currentMat;
 
         // Checks if the crop is fully grown
         if(growPercent >= 1.0f) {
             currentState = GrowthState.FullyGrown;
-            UpdateMaterial(grownMat);
             return;
         }
     }
@@ -144,18 +137,9 @@ public class FarmPlot : MonoBehaviour
     private GameObject Harvest()
 	{
         GameObject grownCrop = currentCrop;
-        // Removes the crop, plot state, and updates material
+        // Removes the crop and plot state
         currentCrop = null;
         currentState = GrowthState.None;
-        UpdateMaterial(noCropMat);
         return grownCrop;
-    }
-
-    /// <summary>
-    /// Helper function to update the material of the plot rim
-    /// </summary>
-    private void UpdateMaterial(Material newMat)
-	{
-        transform.Find("progress").GetComponent<MeshRenderer>().material = newMat;
     }
 }

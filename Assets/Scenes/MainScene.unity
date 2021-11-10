@@ -266,6 +266,19 @@ GameObject:
   m_CorrespondingSourceObject: {fileID: 2342268984711522857, guid: 302a3e257c6ae654ca25ca245104afae, type: 3}
   m_PrefabInstance: {fileID: 3962854599977206297}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1291821352
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1291821351}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6b835f9766db9ba499c7d81127c2401a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  inventory: []
 --- !u!114 &1291821354
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -278,6 +291,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90ab3030a20cd1e4a9143a01b7599eb1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  currentInteractable: {fileID: 0}
   currentItem: {fileID: 0}
 --- !u!1 &1568248714
 GameObject:
@@ -288,6 +302,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1568248716}
+  - component: {fileID: 1568248715}
   m_Layer: 0
   m_Name: plots
   m_TagString: ParentObj
@@ -295,6 +310,25 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &1568248715
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1568248714}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a1af2f196c66ef439f4deb7d2e50489, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  noCropMat: {fileID: 2100000, guid: 26cb836245a04ec43a3a7348ecd65435, type: 2}
+  plantedMat: {fileID: 2100000, guid: 4bffdf06e4c64314ea1cdb5304293ebf, type: 2}
+  growingStartMat: {fileID: 2100000, guid: 47940e145ab62e242a2e6748612b37e6, type: 2}
+  growingMidMat: {fileID: 2100000, guid: a3ec36ad43c56d442a066723a530d7c8, type: 2}
+  grownMat: {fileID: 2100000, guid: 8ee87f0b1f9f47448a7305dc5e4c80c8, type: 2}
+  unwateredMat: {fileID: 2100000, guid: 25bcc161b469e6543a2f7d43e40c33d6, type: 2}
+  wateredMat: {fileID: 2100000, guid: a02c44b1ee58d364da97e8523f7a303c, type: 2}
 --- !u!4 &1568248716
 Transform:
   m_ObjectHideFlags: 0
@@ -478,6 +512,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 867092290073272948, guid: 302a3e257c6ae654ca25ca245104afae, type: 3}
+      propertyPath: m_TagString
+      value: MainCamera
+      objectReference: {fileID: 0}
     - target: {fileID: 2342268984711522857, guid: 302a3e257c6ae654ca25ca245104afae, type: 3}
       propertyPath: m_Name
       value: playerParent
@@ -526,7 +564,8 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 7603406133782906542, guid: 302a3e257c6ae654ca25ca245104afae, type: 3}
   m_SourcePrefab: {fileID: 100100000, guid: 302a3e257c6ae654ca25ca245104afae, type: 3}
 --- !u!1001 &4620086367466138624
 PrefabInstance:

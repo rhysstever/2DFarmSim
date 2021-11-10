@@ -64,10 +64,10 @@ MonoBehaviour:
   growingStartMat: {fileID: 2100000, guid: 47940e145ab62e242a2e6748612b37e6, type: 2}
   growingMidMat: {fileID: 2100000, guid: a3ec36ad43c56d442a066723a530d7c8, type: 2}
   grownMat: {fileID: 2100000, guid: 8ee87f0b1f9f47448a7305dc5e4c80c8, type: 2}
-  growTotalAmount: 0
-  currentCrop: 0
+  currentCrop: {fileID: 0}
   currentState: 0
   growTimer: 0
+  totalTimeToGrow: 0
 --- !u!1 &6618884795682769719
 GameObject:
   m_ObjectHideFlags: 0
@@ -127,7 +127,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: a02c44b1ee58d364da97e8523f7a303c, type: 2}
+  - {fileID: 2100000, guid: 25bcc161b469e6543a2f7d43e40c33d6, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
