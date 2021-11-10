@@ -15,7 +15,7 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update() {
         if(Input.GetKeyDown(KeyCode.E)) {
-            GameObject currentObj = player.GetComponent<ObjectSelector>().currentObj;
+            GameObject currentObj = player.GetComponent<PlayerInfo>().currentInteractable;
             GameObject currentItem = player.GetComponent<ItemManager>().currentItem;
             if(currentObj != null) {
                 if(currentObj.tag == "FarmPlot")
