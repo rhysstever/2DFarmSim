@@ -5,108 +5,157 @@ using UnityEngine;
 public enum CropType
 {
     Empty,
-    Crop
+    Blueberry
 }
 
 public enum GrowthState
 {
     None,
-    Planted, 
-    Sprouting,
+    Planted,
     Growing,
     FullyGrown
 }
 
 public class FarmPlot : MonoBehaviour
 {
-    public CropType crop;
-    public GrowthState currentTier;
-    public Material currentMat;
-    public Material[] tierMats;
+    // Set in inspector
+    public Material noCropMat;
+    public Material plantedMat;
+    public Material growingStartMat;
+    public Material growingMidMat;
+    public Material grownMat;
+
+    // Set at Start()
+    public GameObject currentCrop;
+    public GrowthState currentState;
+    public float growTimer; 
+    public float totalTimeToGrow;
 
     // Start is called before the first frame update
     void Start()
     {
-        crop = CropType.Empty;
-        currentTier = GrowthState.None;
-        currentMat = tierMats[(int)currentTier];
-        gameObject.transform.Find("progress").GetComponent<MeshRenderer>().material = currentMat;
+        currentCrop = null;
+        currentState = GrowthState.None;
+        growTimer = 0.0f;
+        totalTimeToGrow = 0.0f;
+        transform.Find("progress").GetComponent<MeshRenderer>().material = noCropMat;
     }
 
-    // Update is called once per frame
-    void Update()
+	void FixedUpdate() {
+        if(currentState == GrowthState.Growing)
+            Grow();
+    }
+
+	// Update is called once per frame
+	void Update()
     {
-        if(Vector3.Distance(
-            GameObject.Find("GameManager").GetComponent<PlotManager>().player.transform.position,
-            gameObject.transform.position)
-            < GameObject.Find("GameManager").GetComponent<PlotManager>().nearbyPlotDist
-            && Input.GetKeyDown(KeyCode.E)) {
-            Interact();
-        }
+        
     }
 
     /// <summary>
-    /// Interact with the plot
+    /// Called once when the player interacts with the plot
     /// </summary>
-    void Interact()
+    /// <param name="currentItem">The item the player is holding</param>
+    public void Interact(GameObject currentItem)
 	{
-        switch(currentTier) {
+        switch(currentState) {
             case GrowthState.None:
-                Plant();
+                if(currentItem != null &&
+                    currentItem.tag == "Seeds") {
+                    Plant(currentItem.GetComponent<Seeds>().crop);
+                    GameObject.Find("gameManager").GetComponent<GameManager>().player.GetComponent<ItemManager>().RemoveItem();
+				}
+                else
+                    Debug.Log("You need seeds in hand!");
+                break;
+            case GrowthState.Planted:
+                if(currentItem != null &&
+                    currentItem.tag == "Water") {
+                    Water();
+                    GameObject.Find("gameManager").GetComponent<GameManager>().player.GetComponent<ItemManager>().RemoveItem();
+                }
+                else
+                    Debug.Log("You need water!");
+                break;
+            case GrowthState.Growing:
                 break;
             case GrowthState.FullyGrown:
-                Harvest();
-                break;
-            default:
-                Grow();
+                GameObject.Find("gameManager").GetComponent<GameManager>().player.GetComponent<ItemManager>().PickupItem(Harvest());
                 break;
         }
 	}
 
     /// <summary>
-    /// Plants a crop on the plot
+    /// Plants the crop on the plot
     /// </summary>
-    void Plant()
+    private void Plant(GameObject crop)
 	{
-        crop = CropType.Crop;
-        currentTier = GrowthState.Planted;
-
-        UpdateMat(1);
-        Debug.Log("Planted " + crop);
+        // Adds the crop, updates the plot state, resets the timer, and updates the material
+        currentCrop = crop;
+        currentState = GrowthState.Planted;
+        growTimer = 0.0f;
+        totalTimeToGrow = crop.GetComponent<Crop>().timeToGrow;
+        UpdateMaterial(plantedMat);
     }
 
     /// <summary>
-    /// Increments the GrowthState of the plot
+    /// Waters the crop on the plot
     /// </summary>
-    void Grow()
-	{
-        int tierInt = (int)currentTier;
-        tierInt++;
-        currentTier = (GrowthState)tierInt;
-
-        UpdateMat(tierInt);
-        // Debug.Log("Growth to state: " + currentTier);
-	}
+    private void Water() 
+    {
+        // Updates state and material of the plot
+        currentState = GrowthState.Growing;
+        UpdateMaterial(growingStartMat);
+    }
 
     /// <summary>
-    /// Harvests the current crop of the plot
+    /// Runs a timer until the crop is fully grown
     /// </summary>
-    void Harvest()
+    private void Grow()
 	{
-        UpdateMat(0);
-        Debug.Log("Harvested " + crop);
-        
-        crop = CropType.Empty;
-        currentTier = GrowthState.None;
+        // Calculate what percent grown the crop is
+        float growPercent = growTimer / totalTimeToGrow;
+
+        // Gets the correct material based on how much the crop has grown
+        Material currentMat = growingStartMat;
+        switch(growPercent) {
+            case float perc when perc >= 0.5f:
+                // 50% growth
+                currentMat = growingMidMat;
+                break;
+        }
+
+        // Increment timer and apply material
+        growTimer += Time.deltaTime / totalTimeToGrow;
+        transform.Find("progress").GetComponent<MeshRenderer>().material = currentMat;
+
+        // Checks if the crop is fully grown
+        if(growPercent >= 1.0f) {
+            currentState = GrowthState.FullyGrown;
+            UpdateMaterial(grownMat);
+            return;
+        }
+    }
+
+    /// <summary>
+    /// Harvests the crop of the plot
+    /// </summary>
+    /// <returns>The grown crop</returns>
+    private GameObject Harvest()
+	{
+        GameObject grownCrop = currentCrop;
+        // Removes the crop, plot state, and updates material
+        currentCrop = null;
+        currentState = GrowthState.None;
+        UpdateMaterial(noCropMat);
+        return grownCrop;
     }
 
     /// <summary>
     /// Helper function to update the material of the plot rim
     /// </summary>
-    /// <param name="matIndex"></param>
-    void UpdateMat(int matIndex)
+    private void UpdateMaterial(Material newMat)
 	{
-        currentMat = tierMats[matIndex];
-        gameObject.transform.Find("progress").GetComponent<MeshRenderer>().material = currentMat;
+        transform.Find("progress").GetComponent<MeshRenderer>().material = newMat;
     }
 }

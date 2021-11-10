@@ -1,11 +1,13 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlotManager : MonoBehaviour
+public class Crop : MonoBehaviour
 {
-    public GameObject player;
-    public float nearbyPlotDist;
+    // Set in inspector
+    public float value;
+    public CropType cropType;
+    public float timeToGrow;
 
     // Start is called before the first frame update
     void Start()

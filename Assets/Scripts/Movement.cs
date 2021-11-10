@@ -4,45 +4,57 @@ using UnityEngine;
 
 public class Movement : MonoBehaviour
 {
+	// Set in inspector
 	public float moveSpeed;
-	public float turnSpeed;
 	public float jumpAmount;
 	public float gravity;
 	public bool canMove;
+	public bool isGrounded;
+	public float horizontalMouseSensitivity;
+	public float verticalMouseSensitivity;
+
+	// Set at Start()
+	Camera playerCam;
 	Vector3 acceleration;
+	Vector2 rotation;
 
 	// Start is called before the first frame update
 	void Start()
 	{
-		moveSpeed = 10.0f;
-		turnSpeed = 100.0f;
-		jumpAmount = 15.0f;
-		canMove = true;
+		playerCam = transform.GetComponentInChildren<Camera>();
+
 		acceleration = new Vector3();
+		rotation = Vector2.zero;
+
+		Cursor.lockState = CursorLockMode.Locked;
+		Cursor.visible = false;
 	}
 
 	// Update is called once per frame
 	void Update()
 	{
-		
+
 	}
 
 	// FixedUpdate is called once every fixed framerate frame
 	void FixedUpdate()
 	{
+		CheckGroundedness();
+
 		if(canMove) {
 			BasicMovement();
 			VerticalMovement();
+			MouseLook();
 		}
 	}
 
 	/// <summary>
 	/// Handles basic forward/backward & turning movement
 	/// </summary>
-	void BasicMovement()
+	private void BasicMovement()
 	{
 		// Sprinting - only allowed on the ground
-		if(isGrounded()) {
+		if(isGrounded) {
 			if(Input.GetKey(KeyCode.LeftShift))
 				moveSpeed = 20.0f;
 			else
@@ -51,40 +63,61 @@ public class Movement : MonoBehaviour
 
 		// Foward / Backward movement
 		float movement = Input.GetAxis("Vertical") * Time.deltaTime * moveSpeed;
-		transform.Translate(0,0,movement);
+		transform.Translate(0, 0, movement);
 
-		// Turning 
-		float turning = Input.GetAxis("Horizontal") * Time.deltaTime * turnSpeed;
-		transform.Rotate(0,turning,0);
+		// Side movement 
+		float movementSide = Input.GetAxis("Horizontal") * Time.deltaTime * moveSpeed;
+		transform.Translate(movementSide, 0, 0);
 	}
 
 	/// <summary>
 	/// Handles jumping and gravity
 	/// </summary>
-	void VerticalMovement()
+	private void VerticalMovement()
 	{
-		if(!isGrounded()) {
+		if(!isGrounded) {
 			acceleration.y -= gravity * Time.deltaTime;
 		}
 		else {
-			gameObject.transform.position = new Vector3(
-				gameObject.transform.position.x,
-				0.85f,
-				gameObject.transform.position.z);
-
 			acceleration = new Vector3();
 
 			float jumpAccel = Input.GetAxis("Jump") * Time.deltaTime * jumpAmount;
 			acceleration.y += jumpAccel;
-			//transform.Translate(0, jump, 0);
 		}
 
 		transform.Translate(acceleration);
 	}
 
-	bool isGrounded()
+	/// <summary>
+	/// Checks if the player is on the ground
+	/// </summary>
+	private void CheckGroundedness()
 	{
-		// Currently, checks if the player is on the same y-value as the ground
-		return gameObject.transform.position.y <= 0.85f;
+		Vector3 origin = transform.position;
+		origin.y -= GetComponent<CapsuleCollider>().height / 2;
+		RaycastHit rayHit;
+		if(Physics.Raycast(origin, Vector3.down, out rayHit, Mathf.Infinity)) {
+			if(LayerMask.LayerToName(rayHit.transform.gameObject.layer) == "Ground") {
+				if(rayHit.distance < 0.5f)
+					isGrounded = true;
+				else
+					isGrounded = false;
+			}
+		}
+	}
+
+	/// <summary>
+	/// Rotates the player's camera and transform based on mouse position
+	/// </summary>
+	public void MouseLook()
+	{
+		// Horizontal mouse look: rotating the player's transform
+		rotation.y += Input.GetAxis("Mouse X");
+		transform.eulerAngles = new Vector2(0, rotation.y) * horizontalMouseSensitivity;
+
+		// Vertical mouse look: rotating the player camera
+		rotation.x += -Input.GetAxis("Mouse Y");
+		rotation.x = Mathf.Clamp(rotation.x, -5.0f, 5.0f);
+		playerCam.transform.localRotation = Quaternion.Euler(rotation.x * verticalMouseSensitivity, 0, 0);
 	}
 }
