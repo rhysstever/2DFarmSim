@@ -1,26 +1,35 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
+
+[System.Serializable]
+public class UnityGameObjectEvent : UnityEvent<GameObject>
+{
+}
 
 public class ItemManager : MonoBehaviour
 {
     // Set at Start()
     public GameObject currentInteractable;
-    public GameObject currentItem;
+    public GameObject currentItem;  // Updated in Update()
+
+    public UnityGameObjectEvent pickupEvent = new UnityGameObjectEvent();
+    public UnityEvent removeEvent = new UnityEvent();
 
     // Based on keyboard number locations
     // (1,2,3,...,9,0) for indecies 0->9
     private int currentItemSlot;    
-    private Transform playerTrans;
 
     // Start is called before the first frame update
     void Start()
     {
         currentInteractable = null;
         currentItemSlot = 1;    // the "1" number key correlates to the 0th index
-        currentItem = GetComponent<Inventory>().GetInventoryItem(currentItemSlot);
+        ChangeSelectedItem(1);
 
-        playerTrans = GameObject.FindGameObjectWithTag("Player").transform;
+        pickupEvent.AddListener(PickupItem);
+        removeEvent.AddListener(RemoveCurrentItem);
     }
 
     // Update is called once per frame
@@ -33,6 +42,8 @@ public class ItemManager : MonoBehaviour
         string input = Input.inputString;
         if(!string.IsNullOrEmpty(input))
             ParseInput(input);
+
+        ScrollThroughInventory();
     }
 
     void FixedUpdate()
@@ -51,7 +62,7 @@ public class ItemManager : MonoBehaviour
         {
             // If the input is able to be parsed into a number,
             // change the current item slot to that number
-            currentItemSlot = numInput;
+            ChangeSelectedItem(numInput);
             return;
 		}
 
@@ -65,7 +76,7 @@ public class ItemManager : MonoBehaviour
                 if(currentInteractable != null)
                 {
                     if(currentInteractable.tag == "FarmPlot")
-                        currentInteractable.GetComponent<FarmPlot>().Interact(currentItem);
+                        GetComponent<GameManager>().plotsParent.GetComponent<PlotManager>().Interact(currentInteractable, currentItem, pickupEvent, removeEvent);
                     else if(currentInteractable.GetComponent<Item>() != null ||
                         currentInteractable.tag == "Water")
                         PickupItem(currentInteractable);
@@ -84,13 +95,14 @@ public class ItemManager : MonoBehaviour
     {
         // ===== Unity's Raycast Script =====
         // Modified but still the core
+        Transform playerTrans = GetComponent<GameManager>().player.transform;
 
         // Create a layerMask that includes everything except layer 7 (the Player layer)
         int layerMask = 1 << 7;
         layerMask = ~layerMask;
 
         RaycastHit hit;
-        Vector3 forward = playerTrans.parent.GetComponent<Movement>().transform.forward;
+        Vector3 forward = playerTrans.forward;
         Vector3 direction = forward.normalized;
         direction += Vector3.down;
         // Does the ray intersect any objects excluding the player layer
@@ -127,7 +139,39 @@ public class ItemManager : MonoBehaviour
     /// Removes the current item from the player
     /// </summary>
     /// <returns>The current item</returns>
-    public GameObject RemoveCurrentItem() {
-        return GetComponent<Inventory>().RemoveFromInventory(currentItemSlot);
+    public void RemoveCurrentItem() {
+        GetComponent<Inventory>().RemoveFromInventory(currentItemSlot);
+        return;
 	}
+
+    /// <summary>
+    /// Changes the current item being selected
+    /// </summary>
+    private void ScrollThroughInventory()
+	{
+        // Scrolling forward
+        if(Input.GetAxis("Mouse ScrollWheel") > 0f) 
+            ChangeSelectedItem(currentItemSlot - 1);
+        // Scrolling backwards
+        else if(Input.GetAxis("Mouse ScrollWheel") < 0f)
+            ChangeSelectedItem(currentItemSlot + 1);
+    }
+
+    /// <summary>
+    /// Called whenever the current selected item slot is changed
+    /// </summary>
+    /// <param name="newIndex">The index of the newly selected item</param>
+    private void ChangeSelectedItem(int newSlot)
+	{
+        // Ensures the new item slot is within bounds
+        currentItemSlot = newSlot;
+        if(currentItemSlot == -1)
+            currentItemSlot = 9;
+        else if(currentItemSlot == 10)
+            currentItemSlot = 0;
+
+        // Updates the UI
+        int index = GetComponent<Inventory>().SlotToIndex(currentItemSlot);
+        GetComponent<UIManager>().UpdateSelectedItemUI(index);
+    }
 }

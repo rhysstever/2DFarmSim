@@ -9,7 +9,7 @@ public class Item : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        string imagePath = "Images/" + name;
+        string imagePath = "Images/GameObjects/" + name;
         image = Resources.Load<Texture>(imagePath);
     }
 

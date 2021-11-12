@@ -21,7 +21,6 @@ public class UIManager : MonoBehaviour
 	public GameObject backpackPanel;
 
 	// Set at Start()
-	private Texture waterImage;
 
 	// Start is called before the first frame update
 	void Start()
@@ -40,11 +39,10 @@ public class UIManager : MonoBehaviour
 		// Initially the backpack should not be visible
 		backpackPanel.SetActive(false);
 
-		// Hide all children of each inventory slot
+		// Hide all item image children of each inventory slot
+		// (the player starts with nothing)
 		foreach(Transform childPanel in inventoryPanel.transform)
-		{
 			childPanel.transform.GetChild(0).gameObject.SetActive(false);
-		}
 	}
 
 	private void UpdateUI()
@@ -55,7 +53,7 @@ public class UIManager : MonoBehaviour
 			// Toggle backpack panel 
 			backpackPanel.SetActive(!backpackPanel.activeInHierarchy);
 			// Set the player's ability to move based on if the panel is open (opposite from each other)
-			GetComponent<GameManager>().player.GetComponent<PlayerInfo>().canMove = !backpackPanel.activeInHierarchy;
+			GetComponent<GameManager>().player.GetComponent<Movement>().canMove = !backpackPanel.activeInHierarchy;
 		}
 	}
 
@@ -67,7 +65,7 @@ public class UIManager : MonoBehaviour
 	public void AddImageToInventory(GameObject gameObj, int index)
 	{
 		// Check if the object is an item
-		if(gameObj.GetComponent<Item>() == null)
+		if(gameObj == null || gameObj.GetComponent<Item>() == null)
 			return;
 
 		// Activate image gameObj active (child of inventory slot panel) and add the raw image to it
@@ -86,5 +84,19 @@ public class UIManager : MonoBehaviour
 		GameObject imageGO = inventoryPanel.transform.GetChild(index).GetChild(0).gameObject;
 		imageGO.GetComponent<RawImage>().texture = null;
 		imageGO.SetActive(false);
+	}
+
+	/// <summary>
+	/// Activates the correct item selected image based on the given index
+	/// </summary>
+	/// <param name="index">The index of the currently selected item</param>
+	public void UpdateSelectedItemUI(int index)
+	{
+		// Deactivates all selectedItem images
+		foreach(Transform childPanel in inventoryPanel.transform)
+			childPanel.transform.GetChild(1).gameObject.SetActive(false);
+
+		// Activates the selectedItem image of the currently selected item
+		inventoryPanel.transform.GetChild(index).transform.GetChild(1).gameObject.SetActive(true);
 	}
 }
