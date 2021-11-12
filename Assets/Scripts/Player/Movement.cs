@@ -5,22 +5,24 @@ using UnityEngine;
 public class Movement : MonoBehaviour
 {
 	// Set in inspector
-	public float moveSpeed;
-	public bool canMove;
+	private float moveSpeed;
+	private bool canMove;
 
 	// Set at Start()
 
 	// Start is called before the first frame update
 	void Start()
 	{
-		Cursor.lockState = CursorLockMode.Locked;
-		Cursor.visible = false;
+		// Get player values for movement from the parent
+		moveSpeed = transform.parent.GetComponent<PlayerInfo>().moveSpeed;
+		canMove = transform.parent.GetComponent<PlayerInfo>().canMove;
 	}
 
 	// Update is called once per frame
 	void Update()
 	{
-
+		// Get the current move status of the player
+		canMove = transform.parent.GetComponent<PlayerInfo>().canMove;
 	}
 
 	// FixedUpdate is called once every fixed framerate frame

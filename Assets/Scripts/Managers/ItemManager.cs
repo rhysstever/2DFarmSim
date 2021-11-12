@@ -4,16 +4,21 @@ using UnityEngine;
 
 public class ItemManager : MonoBehaviour
 {
+    // Set at Start()
     public GameObject currentInteractable;
     public GameObject currentItem;
-    
+
+    // Based on keyboard number locations
+    // (1,2,3,...,9,0) for indecies 0->9
+    private int currentItemSlot;    
     private Transform playerTrans;
 
     // Start is called before the first frame update
     void Start()
     {
         currentInteractable = null;
-        currentItem = null; // the player starts with nothing in hand
+        currentItemSlot = 1;    // the "1" number key correlates to the 0th index
+        currentItem = GetComponent<Inventory>().GetInventoryItem(currentItemSlot);
 
         playerTrans = GameObject.FindGameObjectWithTag("Player").transform;
     }
@@ -21,12 +26,54 @@ public class ItemManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        // Get current item from the inventory
+        currentItem = GetComponent<Inventory>().GetInventoryItem(currentItemSlot);
+
+        // Get user input
+        string input = Input.inputString;
+        if(!string.IsNullOrEmpty(input))
+            ParseInput(input);
     }
 
     void FixedUpdate()
     {
         currentInteractable = FindInteractable();
+    }
+
+    /// <summary>
+    /// Parses user input
+    /// </summary>
+    /// <param name="input">The input (key, button, etc) pressed</param>
+    private void ParseInput(string input)
+	{
+        // Handle number key presses
+        if(int.TryParse(input, out int numInput))
+        {
+            // If the input is able to be parsed into a number,
+            // change the current item slot to that number
+            currentItemSlot = numInput;
+            return;
+		}
+
+        // Standard letter key input
+        switch(input.ToUpper())
+        {
+            case "Q":
+                RemoveCurrentItem();
+                break;
+            case "E":
+                if(currentInteractable != null)
+                {
+                    if(currentInteractable.tag == "FarmPlot")
+                        currentInteractable.GetComponent<FarmPlot>().Interact(currentItem);
+                    else if(currentInteractable.GetComponent<Item>() != null ||
+                        currentInteractable.tag == "Water")
+                        PickupItem(currentInteractable);
+                }
+                break;
+            default:
+                break;
+        }
     }
 
     /// <summary>
@@ -69,14 +116,11 @@ public class ItemManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Sets a new current item
+    /// Adds an item to the inventory
     /// </summary>
     /// <param name="newItem">The new item</param>
     public void PickupItem(GameObject newItem) {
-        if(currentItem != null)
-            Debug.Log("Hands are full! Discard current item.");
-        else
-            currentItem = newItem;
+        GetComponent<Inventory>().AddToInventory(newItem);
 	}
 
     /// <summary>
@@ -84,8 +128,6 @@ public class ItemManager : MonoBehaviour
     /// </summary>
     /// <returns>The current item</returns>
     public GameObject RemoveCurrentItem() {
-        GameObject temp = currentItem;
-        currentItem = null;
-        return temp;
+        return GetComponent<Inventory>().RemoveFromInventory(currentItemSlot);
 	}
 }
