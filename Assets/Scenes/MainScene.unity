@@ -522,6 +522,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   currentInteractable: {fileID: 0}
   currentItem: {fileID: 0}
+  pickupEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  removeEvent:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!114 &357414811
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2078,6 +2084,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6587978050738407479, guid: e4a2b6ea11a6c4545976ecbea748db74, type: 3}
+      propertyPath: crop
+      value: 
+      objectReference: {fileID: 5838932143850884937, guid: 5d6d698da852f6740a5a12ce03e6b728, type: 3}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e4a2b6ea11a6c4545976ecbea748db74, type: 3}
 --- !u!1001 &8119740958018371782
