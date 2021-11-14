@@ -22,33 +22,42 @@ public class FarmPlot : MonoBehaviour
     // Set in inspector
 
     // Set at Start()
+    public string plotName;
     public GameObject currentCrop;
-    public GrowthState currentState;
+    public GrowthState currentGrowthState;
     public float growTimer; 
     public float totalTimeToGrow;
+    public float growPercent;
 
     // An event that updates the plot's materials when the growth state changes
+    // Set in PlotManager.cs
     public UnityPlotMatEvent matUpdateEvent;
+
+    private GameObject cropGrowthGO;
 
     // Start is called before the first frame update
     void Start()
     {
+        UpdateName();
         currentCrop = null;
-        currentState = GrowthState.None;
+        currentGrowthState = GrowthState.None;
         growTimer = 0.0f;
         totalTimeToGrow = 0.0f;
+        growPercent = 0.0f;
+
+        cropGrowthGO = null;
     }
 
 	void FixedUpdate() {
-        if(currentState == GrowthState.GrowingStart
-            || currentState == GrowthState.GrowingMid)
+        if(currentGrowthState == GrowthState.GrowingStart
+            || currentGrowthState == GrowthState.GrowingMid)
             Grow();
     }
 
 	// Update is called once per frame
 	void Update()
     {
-        
+
     }
 
     /// <summary>
@@ -58,10 +67,16 @@ public class FarmPlot : MonoBehaviour
 	{
         // Adds the crop, updates the plot state, and resets the timer
         currentCrop = crop;
-        currentState = GrowthState.Planted;
+        currentGrowthState = GrowthState.Planted;
         growTimer = 0.0f;
         totalTimeToGrow = crop.GetComponent<Crop>().timeToGrow;
-        matUpdateEvent.Invoke(transform, currentState);
+        growPercent = 0.0f;
+
+        // Update the growing gameObj on the plot in the scene
+        UpdateGrowthGameObject();
+        UpdateName();
+        // Invoke the update material event
+        matUpdateEvent.Invoke(transform, currentGrowthState);
     }
 
     /// <summary>
@@ -70,8 +85,10 @@ public class FarmPlot : MonoBehaviour
     public void Water() 
     {
         // Updates state of the plot
-        currentState = GrowthState.GrowingStart;
-        matUpdateEvent.Invoke(transform, currentState);
+        currentGrowthState = GrowthState.GrowingStart;
+        // Invoke the update material event
+        UpdateName();
+        matUpdateEvent.Invoke(transform, currentGrowthState);
     }
 
     /// <summary>
@@ -80,14 +97,19 @@ public class FarmPlot : MonoBehaviour
     public void Grow()
 	{
         // Calculate what percent grown the crop is
-        float growPercent = growTimer / totalTimeToGrow;
+        growPercent = growTimer / totalTimeToGrow;
+        growPercent *= 100.0f;
+        UpdateName();
 
         // Checks if the crop is halfway grown
         switch(growPercent) {
             // 50% growth
-            case float perc when perc >= 0.5f:
-                currentState = GrowthState.GrowingMid;
-                matUpdateEvent.Invoke(transform, currentState);
+            case float perc when perc >= 50.0f:
+                currentGrowthState = GrowthState.GrowingMid;
+                // Update the growing gameObj on the plot in the scene
+                UpdateGrowthGameObject();
+                // Invoke the update material event
+                matUpdateEvent.Invoke(transform, currentGrowthState);
                 break;
         }
 
@@ -95,9 +117,14 @@ public class FarmPlot : MonoBehaviour
         growTimer += Time.deltaTime / totalTimeToGrow;
 
         // Checks if the crop is fully grown
-        if(growPercent >= 1.0f) {
-            currentState = GrowthState.FullyGrown;
-            matUpdateEvent.Invoke(transform, currentState);
+        if(growPercent >= 100.0f) {
+            currentGrowthState = GrowthState.FullyGrown;
+            growPercent = 100.0f;
+            // Update the growing gameObj on the plot in the scene
+            UpdateGrowthGameObject();
+            UpdateName();
+            // Invoke the update material event
+            matUpdateEvent.Invoke(transform, currentGrowthState);
             return;
         }
     }
@@ -111,8 +138,67 @@ public class FarmPlot : MonoBehaviour
         GameObject grownCrop = currentCrop;
         // Removes the crop and plot state
         currentCrop = null;
-        currentState = GrowthState.None;
-        matUpdateEvent.Invoke(transform, currentState);
+        currentGrowthState = GrowthState.None;
+        growPercent = 0.0f;
+        // Update the growing gameObj on the plot in the scene
+        UpdateGrowthGameObject();
+        UpdateName();
+        // Invoke the update material event
+        matUpdateEvent.Invoke(transform, currentGrowthState);
         return grownCrop;
     }
+
+    /// <summary>
+    /// Destroys the current growth gameObject and replaces it with the correct one based on the growth state
+    /// </summary>
+    private void UpdateGrowthGameObject()
+	{
+        // Kill the current gameObject on the plot
+        Destroy(cropGrowthGO);
+
+        // Find the new gameObject based on the growth state of the plot/crop
+        GameObject growthGameObj = null;
+        switch(currentGrowthState)
+        {
+            case GrowthState.None:
+                return;
+            case GrowthState.Planted:
+            case GrowthState.GrowingStart:
+                growthGameObj = currentCrop.GetComponent<Crop>().planted;
+                break;
+            case GrowthState.GrowingMid:
+                growthGameObj = currentCrop.GetComponent<Crop>().growingMid;
+                break;
+            case GrowthState.FullyGrown:
+                growthGameObj = currentCrop.GetComponent<Crop>().fullyGrown;
+                break;
+        }
+
+        // Calculate the position of the new gameObject
+        Vector3 spawnPos = transform.position;
+        spawnPos.y += 0.5f;
+
+        // Create the new gameObject and store it
+        cropGrowthGO = Instantiate(growthGameObj, spawnPos, Quaternion.identity, transform);
+    }
+
+    public void UpdateName()
+	{
+        switch(currentGrowthState)
+        {
+            case GrowthState.None:
+                plotName = "Empty Plot";
+                break;
+            case GrowthState.Planted:
+                plotName = currentCrop.GetComponent<Crop>().cropType + " Plot (unwatered)";
+                break;
+            case GrowthState.GrowingStart:
+            case GrowthState.GrowingMid:
+                plotName = currentCrop.GetComponent<Crop>().cropType + " Plot (" + (int)growPercent + "%)";
+                break;
+            case GrowthState.FullyGrown:
+                plotName = currentCrop.GetComponent<Crop>().cropType + " Plot";
+                break;
+        }
+	}
 }

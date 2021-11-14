@@ -12,6 +12,9 @@ public class UIManager : MonoBehaviour
 	public GameObject gameUI;
 
 	[SerializeField]
+	public GameObject currentInteractablePanel;
+
+	[SerializeField]
 	public GameObject inventoryUI;
 
 	[SerializeField]
@@ -47,6 +50,22 @@ public class UIManager : MonoBehaviour
 
 	private void UpdateUI()
 	{
+		// Update the Current Interactable panel with the name of the object
+		GameObject currentInteractable = GetComponent<ItemManager>().currentInteractable;
+		if(currentInteractable == null)
+			currentInteractablePanel.SetActive(false);	// deactivate if there is no interactable
+		else
+		{
+			// Activacte and set the proper name
+			currentInteractablePanel.SetActive(true);
+			string name = currentInteractable.name;
+			if(currentInteractable.GetComponent<FarmPlot>() != null)
+				name = currentInteractable.GetComponent<FarmPlot>().plotName;
+			else if(currentInteractable.GetComponent<Item>() != null)
+				name = currentInteractable.GetComponent<Item>().itemName;
+			currentInteractablePanel.GetComponentInChildren<Text>().text = " " + name;
+		}
+
 		// Tab - Toggles the backpack
 		if(Input.GetKeyDown(KeyCode.Tab))
 		{

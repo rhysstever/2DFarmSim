@@ -6,6 +6,7 @@ using UnityEngine.Events;
 [System.Serializable]
 public class UnityGameObjectEvent : UnityEvent<GameObject>
 {
+    // An empty class that is used for events that hold parameterized methods
 }
 
 public class ItemManager : MonoBehaviour
@@ -14,8 +15,8 @@ public class ItemManager : MonoBehaviour
     public GameObject currentInteractable;
     public GameObject currentItem;  // Updated in Update()
 
-    public UnityGameObjectEvent pickupEvent = new UnityGameObjectEvent();
-    public UnityEvent removeEvent = new UnityEvent();
+    private UnityGameObjectEvent pickupEvent = new UnityGameObjectEvent();
+    private UnityEvent removeEvent = new UnityEvent();
 
     // Based on keyboard number locations
     // (1,2,3,...,9,0) for indecies 0->9
@@ -30,6 +31,8 @@ public class ItemManager : MonoBehaviour
 
         pickupEvent.AddListener(PickupItem);
         removeEvent.AddListener(RemoveCurrentItem);
+
+        GetComponent<GameManager>().player.GetComponentInChildren<PickupHandler>().pickupEvent = pickupEvent;
     }
 
     // Update is called once per frame

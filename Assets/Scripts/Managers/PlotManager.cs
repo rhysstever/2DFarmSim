@@ -6,6 +6,7 @@ using UnityEngine.Events;
 [System.Serializable]
 public class UnityPlotMatEvent : UnityEvent<Transform, GrowthState>
 {
+    // An empty class that is used for events that hold parameterized methods
 }
 
 public class PlotManager : MonoBehaviour
@@ -51,7 +52,7 @@ public class PlotManager : MonoBehaviour
             return;
 
         // Interact with the plot based on the plot's current growth state
-        switch(plot.GetComponent<FarmPlot>().currentState)
+        switch(plot.GetComponent<FarmPlot>().currentGrowthState)
         {
             case GrowthState.None:
                 // Check if the held item is a seed

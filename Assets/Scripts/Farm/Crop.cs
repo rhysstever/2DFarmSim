@@ -4,10 +4,15 @@ using UnityEngine;
 
 public class Crop : MonoBehaviour
 {
-    // Set in inspector
+    // === Set in inspector ===
     public float value;
     public CropType cropType;
     public float timeToGrow;
+
+    // GameObjects for growth
+    public GameObject planted;
+    public GameObject growingMid;
+    public GameObject fullyGrown;
 
     // Start is called before the first frame update
     void Start()
