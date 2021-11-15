@@ -59,15 +59,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d751cdc8d83916845bb5552326a6a116, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  noCropMat: {fileID: 2100000, guid: 26cb836245a04ec43a3a7348ecd65435, type: 2}
-  plantedMat: {fileID: 2100000, guid: 4bffdf06e4c64314ea1cdb5304293ebf, type: 2}
-  growingStartMat: {fileID: 2100000, guid: 47940e145ab62e242a2e6748612b37e6, type: 2}
-  growingMidMat: {fileID: 2100000, guid: a3ec36ad43c56d442a066723a530d7c8, type: 2}
-  grownMat: {fileID: 2100000, guid: 8ee87f0b1f9f47448a7305dc5e4c80c8, type: 2}
+  plotName: 
   currentCrop: {fileID: 0}
-  currentState: 0
+  currentGrowthState: 0
   growTimer: 0
   totalTimeToGrow: 0
+  growPercent: 0
+  matUpdateEvent:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &6618884795682769719
 GameObject:
   m_ObjectHideFlags: 0
@@ -94,8 +94,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6618884795682769719}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.25, z: 0}
-  m_LocalScale: {x: 1.5, y: 0.5, z: 1.5}
+  m_LocalPosition: {x: 0, y: 0.125, z: 0}
+  m_LocalScale: {x: 1.7, y: 0.25, z: 1.7}
   m_Children: []
   m_Father: {fileID: 6380409106712305892}
   m_RootOrder: 0
@@ -175,8 +175,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8034941516358216590}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.125, z: 0}
-  m_LocalScale: {x: 2, y: 0.25, z: 2}
+  m_LocalPosition: {x: 0, y: 0.0625, z: 0}
+  m_LocalScale: {x: 2, y: 0.125, z: 2}
   m_Children: []
   m_Father: {fileID: 6380409106712305892}
   m_RootOrder: 1

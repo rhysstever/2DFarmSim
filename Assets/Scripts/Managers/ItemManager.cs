@@ -32,7 +32,7 @@ public class ItemManager : MonoBehaviour
         pickupEvent.AddListener(PickupItem);
         removeEvent.AddListener(RemoveCurrentItem);
 
-        GetComponent<GameManager>().player.GetComponentInChildren<PickupHandler>().pickupEvent = pickupEvent;
+        GetComponent<GameManager>().player.GetComponentInChildren<CollisionHandler>().pickupEvent = pickupEvent;
     }
 
     // Update is called once per frame
@@ -98,18 +98,22 @@ public class ItemManager : MonoBehaviour
     {
         // ===== Unity's Raycast Script =====
         // Modified but still the core
-        Transform playerTrans = GetComponent<GameManager>().player.transform;
+        
+        // Get the transform of the player body
+        Transform playerBodyTrans = GetComponent<GameManager>().player.transform.GetComponentInChildren<Rigidbody>().gameObject.transform;
 
         // Create a layerMask that includes everything except layer 7 (the Player layer)
         int layerMask = 1 << 7;
         layerMask = ~layerMask;
 
         RaycastHit hit;
-        Vector3 forward = playerTrans.forward;
+        // Creates a vector that is 2x the player's transform forward direction and 1x down
+        Vector3 forward = playerBodyTrans.forward;
         Vector3 direction = forward.normalized;
+        direction *= 2;
         direction += Vector3.down;
         // Does the ray intersect any objects excluding the player layer
-        if(Physics.Raycast(playerTrans.position, playerTrans.TransformDirection(direction), out hit, Mathf.Infinity, layerMask))
+        if(Physics.Raycast(playerBodyTrans.position, direction, out hit, Mathf.Infinity, layerMask))
         {
             GameObject hitObject = hit.transform.gameObject;
 

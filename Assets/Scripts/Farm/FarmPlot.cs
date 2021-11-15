@@ -176,12 +176,15 @@ public class FarmPlot : MonoBehaviour
 
         // Calculate the position of the new gameObject
         Vector3 spawnPos = transform.position;
-        spawnPos.y += 0.5f;
+        spawnPos.y += transform.Find("dirt").localScale.y;
 
         // Create the new gameObject and store it
         cropGrowthGO = Instantiate(growthGameObj, spawnPos, Quaternion.identity, transform);
     }
 
+    /// <summary>
+    /// Updates the name of the plot based on the current growth state
+    /// </summary>
     public void UpdateName()
 	{
         switch(currentGrowthState)
@@ -197,7 +200,7 @@ public class FarmPlot : MonoBehaviour
                 plotName = currentCrop.GetComponent<Crop>().cropType + " Plot (" + (int)growPercent + "%)";
                 break;
             case GrowthState.FullyGrown:
-                plotName = currentCrop.GetComponent<Crop>().cropType + " Plot";
+                plotName = currentCrop.GetComponent<Crop>().cropType + " Plot (Grown)";
                 break;
         }
 	}

@@ -18,10 +18,10 @@ public class UIManager : MonoBehaviour
 	public GameObject inventoryUI;
 
 	[SerializeField]
-	public GameObject inventoryPanel;
+	public GameObject currentItemPanel;
 
 	[SerializeField]
-	public GameObject backpackPanel;
+	public GameObject inventoryPanel;
 
 	// Set at Start()
 
@@ -39,9 +39,6 @@ public class UIManager : MonoBehaviour
 
 	private void SetupUI()
 	{
-		// Initially the backpack should not be visible
-		backpackPanel.SetActive(false);
-
 		// Hide all item image children of each inventory slot
 		// (the player starts with nothing)
 		foreach(Transform childPanel in inventoryPanel.transform)
@@ -50,7 +47,7 @@ public class UIManager : MonoBehaviour
 
 	private void UpdateUI()
 	{
-		// Update the Current Interactable panel with the name of the object
+		// Update the current interactable panel with the name of the object
 		GameObject currentInteractable = GetComponent<ItemManager>().currentInteractable;
 		if(currentInteractable == null)
 			currentInteractablePanel.SetActive(false);	// deactivate if there is no interactable
@@ -66,13 +63,18 @@ public class UIManager : MonoBehaviour
 			currentInteractablePanel.GetComponentInChildren<Text>().text = " " + name;
 		}
 
-		// Tab - Toggles the backpack
-		if(Input.GetKeyDown(KeyCode.Tab))
+		// Update the current item panel with the name of the item
+		GameObject currentItem = GetComponent<ItemManager>().currentItem;
+		if(currentItem == null)
+			currentItemPanel.SetActive(false);  // deactivate if there is no interactable
+		else
 		{
-			// Toggle backpack panel 
-			backpackPanel.SetActive(!backpackPanel.activeInHierarchy);
-			// Set the player's ability to move based on if the panel is open (opposite from each other)
-			GetComponent<GameManager>().player.GetComponent<Movement>().canMove = !backpackPanel.activeInHierarchy;
+			// Activacte and set the proper name
+			currentItemPanel.SetActive(true);
+			string name = currentItem.name;
+			if(currentItem.GetComponent<Item>() != null)
+				name = currentItem.GetComponent<Item>().itemName;
+			currentItemPanel.GetComponentInChildren<Text>().text = name;
 		}
 	}
 

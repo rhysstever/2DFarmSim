@@ -5,16 +5,22 @@ using UnityEngine;
 public class Movement : MonoBehaviour
 {
 	// Set in inspector
-	public float moveSpeed;
+	public float baseMoveSpeed;
 	public bool canMove;
 
 	// Set at Start()
+	public bool isSlowed;
+	private float currentMoveSpeed;
 
 	// Start is called before the first frame update
 	void Start()
 	{
+		// Scene settings
 		Cursor.lockState = CursorLockMode.Locked;
 		Cursor.visible = false;
+	
+		isSlowed = false;
+		currentMoveSpeed = baseMoveSpeed;
 	}
 
 	// Update is called once per frame
@@ -37,18 +43,23 @@ public class Movement : MonoBehaviour
 	/// </summary>
 	private void BasicMovement()
 	{
+		// Reset to base move speed
+		currentMoveSpeed = baseMoveSpeed;
+
 		// Sprinting
 		if(Input.GetKey(KeyCode.LeftShift))
-			moveSpeed = 20.0f;
-		else
-			moveSpeed = 10.0f;
+			currentMoveSpeed *= 2.0f;
+
+		// Being slowed - slowed by 40% (move at 60%)
+		if(isSlowed)
+			currentMoveSpeed *= 0.6f;
 
 		// Foward / Backward movement
-		float movement = Input.GetAxis("Vertical") * Time.deltaTime * moveSpeed;
+		float movement = Input.GetAxis("Vertical") * Time.deltaTime * currentMoveSpeed;
 		transform.Translate(0, 0, movement);
 
 		// Side movement 
-		float movementSide = Input.GetAxis("Horizontal") * Time.deltaTime * moveSpeed;
+		float movementSide = Input.GetAxis("Horizontal") * Time.deltaTime * currentMoveSpeed;
 		transform.Translate(movementSide, 0, 0);
 	}
 
@@ -76,8 +87,7 @@ public class Movement : MonoBehaviour
 		// Start with the transform's position,
 		Vector3 toLookPos = playerBodyTrans.position;
 
-		// Add the corresponding vector,
-		// based on the player's input
+		// Add the corresponding vector, based on the player's input
 		// Up
 		if(Input.GetAxis("Vertical") > 0)
 			toLookPos += Vector3.forward;
